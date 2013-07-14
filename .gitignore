@@ -1,0 +1,6 @@
+thumbler
+*.jpg
+*.png
+*.swp
+*.core
+*.o
