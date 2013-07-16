@@ -1,8 +1,17 @@
 #include "gd.h"
 
+#include <err.h>
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
-/*#include <math.h>*/
+#include <string.h>
+#include <sys/param.h>
+
+/* Some default defines */
+#define	THUMB_EXT	"_thmb"
+#define	DEFAULT_WIDTH		400
+
+#define	MAXNAMLEN	255
 
 
 gdImagePtr
@@ -13,7 +22,7 @@ loadImage(const char *name)
 
 	fp = fopen(name, "rb");
 	if (!fp) {
-		fprintf(stderr, "Can't open jpeg file\n");
+		fprintf(stderr, "Can't open %s file\n", name);
 		return NULL;
 	}
 
@@ -30,13 +39,37 @@ savePngImage(gdImagePtr im, const char *name)
 
 	fp = fopen(name, "wb");
 	if (!fp) {
-		fprintf(stderr, "Can't save png image fromtiff.png\n");
+		fprintf(stderr, "Can't save png image to %s\n", name);
 		return 0;
 	}
 	gdImagePng(im, fp);
 
 	fclose(fp);
 	return 1;
+}
+
+char *
+thumbName(const char *name)
+{
+	char		*ext;
+	char		*p;
+	static char	 fullname[MAXPATHLEN]; /* path + fname, static -> init zeros */
+	size_t		 i;
+
+	p = ext = NULL;
+
+	if ((ext = strrchr(name, '.')) == NULL) {
+		fprintf(stdout, "No extension for: %s\n", ext);
+		return NULL;
+	}
+
+	p = (char *) name;
+	for (i = 0; p != ext; i++)
+		fullname[i] = *p++;
+
+	snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THUMB_EXT, ext);
+
+	return fullname;
 }
 
 void
@@ -48,6 +81,8 @@ usage(void)
 
 	exit(1);
 }
+
+
 
 int
 main(int argc, char *argv[])
@@ -64,7 +99,6 @@ main(int argc, char *argv[])
 		fprintf(stderr, "Can't load PNG file <%s>", argv[1]);
 		return 1;
 	}
-	/* gdImageSX(im)) gdImageSY(im)); */
 	new_width = gdImageSX(im) / 2;
 	new_height = gdImageSY(im) / 2;
 
@@ -76,6 +110,9 @@ main(int argc, char *argv[])
 		return 1;
 	}
 
+	printf("%s\n", thumbName(argv[1]));
+
+	/*
 	gdImageCopyResized(im2, im, 
 			0, 0, 0, 0,
 			new_width, new_height,
@@ -86,6 +123,7 @@ main(int argc, char *argv[])
 		gdImageDestroy(im2);
 		return 1;
 	}
+	*/
 
 	gdImageDestroy(im2);
 	gdImageDestroy(im);
