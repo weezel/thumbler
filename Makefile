@@ -13,5 +13,5 @@ thumbler.o:
 scanbuild:
 	scan-build -analyze-headers -o result_html -v -enable-checker debug.DumpCallGraph make
 clean:
-	rm -rf *.o *.core fcd *_test all_tests
+	rm -rf *.o *.core thumbler _thmb.jpg pics/*_thmb.jpg
 

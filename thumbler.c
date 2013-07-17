@@ -1,18 +1,25 @@
 #include "gd.h"
 
 #include <err.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
 
-/* Some default defines */
-#define	THUMB_EXT	"_thmb"
-#define	DEFAULT_WIDTH		400
+/* Some thumbnail defaults */
+#define	THMB_EXT		"_thmb"
+#define	THMB_DEFAULT_WIDTH	200
+#define	THMB_DEFAULT_HEIGHT	200
 
-#define	MAXNAMLEN	255
+#ifndef MAXNAMLEN
+#define	MAXNAMLEN		255
+#endif
 
+extern int	errno;
+
+int		flagv;
 
 gdImagePtr
 loadImage(const char *name)
@@ -57,6 +64,7 @@ thumbName(const char *name)
 	size_t		 i;
 
 	p = ext = NULL;
+	memset(fullname, 0, sizeof(fullname));
 
 	if ((ext = strrchr(name, '.')) == NULL) {
 		fprintf(stdout, "No extension for: %s\n", ext);
@@ -67,9 +75,75 @@ thumbName(const char *name)
 	for (i = 0; p != ext; i++)
 		fullname[i] = *p++;
 
-	snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THUMB_EXT, ext);
+	snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THMB_EXT, ext);
 
 	return fullname;
+}
+
+void
+createThumb(const char *imgname)
+{
+	int		 new_width, new_height;
+	const char	*thumbname = NULL;
+	gdImagePtr	 src, dst;
+
+	src = loadImage(imgname);
+
+	if (!src) {
+		fprintf(stderr, "Cannot load file; %s", imgname);
+		return;
+	}
+	new_width = gdImageSX(src) / 2;
+	new_height = gdImageSY(src) / 2;
+
+	dst = gdImageCreateTrueColor(new_width, new_height);
+	if (!dst) {
+		fprintf(stderr, "Cannot create a thumb");
+		gdImageDestroy(src);
+
+		return;
+	}
+
+	gdImageCopyResized(dst, src,
+			0, 0, 0, 0,
+			new_width, new_height,
+			gdImageSX(src), gdImageSY(src));
+	thumbname = thumbName(imgname);
+	if (!savePngImage(dst, thumbname)) {
+		fprintf(stderr, "Cannot save PNG file: %s", imgname);
+		gdImageDestroy(src);
+		gdImageDestroy(dst);
+
+		return;
+	}
+
+	if (flagv)
+		fprintf(stdout, "%s -> %s\n", imgname, thumbname);
+
+	gdImageDestroy(dst);
+	gdImageDestroy(src);
+}
+
+void
+loadFileList(const char *fname)
+{
+	FILE	*fp;
+	char	 buf[MAXPATHLEN];
+
+	if ((fp = fopen(fname, "r")) == NULL)
+		err(1, "Cannot open file: %s", fname);
+
+	errno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		buf[strcspn(buf, "\n")] = '\0';
+
+		if (errno)
+			fprintf(stdout, "Error while processing file %s: %s\n",
+				fname, strerror(errno));
+		createThumb(buf);
+	}
+
+	fclose(fp);
 }
 
 void
@@ -77,56 +151,20 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stdout, "Usage: %s blaa filename.png\n", __progname);
+	fprintf(stdout, "Usage: %s filelist\n", __progname);
 
 	exit(1);
 }
 
-
-
 int
 main(int argc, char *argv[])
 {
-	gdImagePtr	im, im2;
-	int		new_width, new_height;
-
-	im = loadImage(argv[1]);
-
 	if (argc < 2)
 		usage();
 
-	if (!im) {
-		fprintf(stderr, "Can't load PNG file <%s>", argv[1]);
-		return 1;
-	}
-	new_width = gdImageSX(im) / 2;
-	new_height = gdImageSY(im) / 2;
+	/*createThumb(argv[1]);*/
+	loadFileList(argv[1]);
 
-	im2 = gdImageCreateTrueColor(new_width, new_height);
-	if (!im2) {
-		fprintf(stderr, "Can't create a new image");
-		gdImageDestroy(im);
-
-		return 1;
-	}
-
-	printf("%s\n", thumbName(argv[1]));
-
-	/*
-	gdImageCopyResized(im2, im, 
-			0, 0, 0, 0,
-			new_width, new_height,
-			gdImageSX(im), gdImageSY(im));
-	if (!savePngImage(im2, "thumb.png")) {
-		fprintf(stderr, "Can't save PNG file rotated.png");
-		gdImageDestroy(im);
-		gdImageDestroy(im2);
-		return 1;
-	}
-	*/
-
-	gdImageDestroy(im2);
-	gdImageDestroy(im);
 	return 0;
 }
 
