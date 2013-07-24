@@ -60,7 +60,8 @@ thumbName(const char *name)
 {
 	char		*ext;
 	char		*p;
-	static char	 fullname[MAXPATHLEN]; /* path + fname, static -> init zeros */
+	static char	 fullname[MAXPATHLEN]; /* path + fname,
+						  static -> init zeros */
 	size_t		 i;
 
 	p = ext = NULL;
@@ -104,10 +105,10 @@ createThumb(const char *imgname)
 		return;
 	}
 
-	gdImageCopyResized(dst, src,
-			0, 0, 0, 0,
-			new_width, new_height,
-			gdImageSX(src), gdImageSY(src));
+	gdImageCopy(dst, src,
+		    0, 0,
+		    gdImageSX(src) / 2, gdImageSY(src) / 2,
+		    new_width, new_height);
 	thumbname = thumbName(imgname);
 	if (!savePngImage(dst, thumbname)) {
 		fprintf(stderr, "Cannot save PNG file: %s", imgname);
