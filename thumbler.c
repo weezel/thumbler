@@ -12,6 +12,7 @@
 #define	THMB_EXT		"_thmb"
 #define	THMB_DEFAULT_WIDTH	200
 #define	THMB_DEFAULT_HEIGHT	200
+#define	THMB_JPEG_QUALITY	70
 
 #ifndef MAXNAMLEN
 #define	MAXNAMLEN		255
@@ -24,8 +25,12 @@ int		flagv;
 gdImagePtr
 loadImage(const char *name)
 {
+	char		*ext;
 	FILE		*fp;
 	gdImagePtr	 im;
+
+	ext = NULL;
+	im = NULL;
 
 	fp = fopen(name, "rb");
 	if (!fp) {
@@ -33,26 +38,52 @@ loadImage(const char *name)
 		return NULL;
 	}
 
-	im = gdImageCreateFromJpeg(fp);
+	if ((ext = strrchr(name, '.')) == NULL)
+		return NULL;
+
+	if (strncasecmp(ext, ".gif", 4) == 0)
+		im = gdImageCreateFromGif(fp);
+	else if (strncasecmp(ext, ".jpg", 4) == 0)
+		im = gdImageCreateFromJpeg(fp);
+	else if (strncasecmp(ext, ".jpeg", 5) == 0)
+		im = gdImageCreateFromJpeg(fp);
+	else if (strncasecmp(ext, ".png", 4) == 0)
+		im = gdImageCreateFromPng(fp);
+	else
+		fprintf(stdout, "'%s' file extension not supported\n", ext);
 
 	fclose(fp);
 	return im;
 }
 
 int
-savePngImage(gdImagePtr im, const char *name)
+saveThumbImage(const gdImagePtr im, const char *name)
 {
+	char	*ext;
 	FILE	*fp;
+
+	ext = NULL;
 
 	fp = fopen(name, "wb");
 	if (!fp) {
 		fprintf(stderr, "Can't save png image to %s\n", name);
-		return 0;
+		return 1;
 	}
-	gdImagePng(im, fp);
+
+	if ((ext = strrchr(name, '.')) == NULL)
+		return 1;
+
+	if (strncasecmp(ext, ".gif", 4) == 0)
+		gdImageGif(im, fp);
+	else if (strncasecmp(ext, ".jpg", 4) == 0)
+		gdImageJpeg(im, fp, THMB_JPEG_QUALITY);
+	else if (strncasecmp(ext, ".jpeg", 5) == 0)
+		gdImageJpeg(im, fp, THMB_JPEG_QUALITY);
+	else if (strncasecmp(ext, ".png", 4) == 0)
+		gdImagePng(im, fp);
 
 	fclose(fp);
-	return 1;
+	return 0;
 }
 
 char *
@@ -69,6 +100,7 @@ thumbName(const char *name)
 
 	if ((ext = strrchr(name, '.')) == NULL) {
 		fprintf(stdout, "No extension for: %s\n", ext);
+
 		return NULL;
 	}
 
@@ -85,13 +117,11 @@ void
 createThumb(const char *imgname)
 {
 	int		 new_width, new_height;
-	const char	*thumbname = NULL;
+	const char	*thumbname;
 	gdImagePtr	 src, dst;
 
-	src = loadImage(imgname);
-
-	if (!src) {
-		fprintf(stderr, "Cannot load file; %s", imgname);
+	if ((src = loadImage(imgname)) == NULL) {
+		fprintf(stderr, "Cannot load file; %s\n", imgname);
 		return;
 	}
 	new_width = gdImageSX(src) / 2;
@@ -99,7 +129,7 @@ createThumb(const char *imgname)
 
 	dst = gdImageCreateTrueColor(new_width, new_height);
 	if (!dst) {
-		fprintf(stderr, "Cannot create a thumb");
+		fprintf(stderr, "Cannot create a thumb\n");
 		gdImageDestroy(src);
 
 		return;
@@ -110,13 +140,8 @@ createThumb(const char *imgname)
 		    gdImageSX(src) / 2, gdImageSY(src) / 2,
 		    new_width, new_height);
 	thumbname = thumbName(imgname);
-	if (!savePngImage(dst, thumbname)) {
-		fprintf(stderr, "Cannot save PNG file: %s", imgname);
-		gdImageDestroy(src);
-		gdImageDestroy(dst);
-
-		return;
-	}
+	if (saveThumbImage(dst, thumbname))
+		fprintf(stderr, "Cannot save file: %s\n", thumbname);
 
 	if (flagv)
 		fprintf(stdout, "%s -> %s\n", imgname, thumbname);
