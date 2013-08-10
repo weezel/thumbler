@@ -22,9 +22,11 @@ and tha da, mypic.jpg has mypic_thmb.jpg adjacent!
 
 ## TODO
 
-* File extension is wrong, should be same as the image source
+* Still pondering whether the resize is needed
 
-* Don't care about the image extension
+* ~~File extension is wrong, should be same as the image source~~
+
+* ~~Don't care about the image extension~~
 
 * ~~Initial version, make it work~~
 
