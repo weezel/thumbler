@@ -1,4 +1,4 @@
-CC	 = gcc
+CC	 = clang
 CFLAGS	+= -ansi -g -Wall -Wextra -pedantic
 CFLAGS	+= -Wsign-compare -Wdeclaration-after-statement -Wshadow
 CFLAGS	+= -I /usr/local/include

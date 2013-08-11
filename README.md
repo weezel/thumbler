@@ -22,7 +22,7 @@ and tha da, mypic.jpg has mypic_thmb.jpg adjacent!
 
 ## TODO
 
-* Still pondering whether the resize is needed
+* ~~Still pondering: resize+shrink or plain resize without shrink. Maybe hide over a switch?~~
 
 * ~~File extension is wrong, should be same as the image source~~
 

@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/param.h>
 
 /* Some thumbnail defaults */
@@ -20,7 +21,8 @@
 
 extern int	errno;
 
-int		flagv;
+int		rflag;	/* Resize only, default is resize + shrink */
+int		vflag;	/* Verbose */
 
 gdImagePtr
 loadImage(const char *name)
@@ -135,26 +137,24 @@ createThumb(const char *imgname)
 	if (!dst) {
 		fprintf(stderr, "Cannot create a thumb\n");
 		gdImageDestroy(src);
-
 		return;
 	}
 
-	gdImageCopyResized(dst, src,
-		0, 0, 0, 0,
-		new_width, new_height,
-		gdImageSX(src),gdImageSY(src));
-
-	/*
-	gdImageCopy(dst, src,
-		    0, 0,
-		    gdImageSX(src) / 2, gdImageSY(src) / 2,
-		    new_width, new_height);
-	*/
+	if (rflag)
+		gdImageCopy(dst, src,
+			0, 0,
+			gdImageSX(src) / 5, gdImageSY(src) / 5,
+			new_width, new_height);
+	else
+		gdImageCopyResized(dst, src,
+			0, 0, 0, 0,
+			new_width, new_height,
+			gdImageSX(src),gdImageSY(src));
 	thumbname = thumbName(imgname);
 	if (saveThumbImage(dst, thumbname))
 		fprintf(stderr, "Cannot save file: %s\n", thumbname);
 
-	if (flagv)
+	if (vflag)
 		fprintf(stdout, "%s -> %s\n", imgname, thumbname);
 
 	gdImageDestroy(dst);
@@ -197,11 +197,26 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
+	int		 ch;
+	const char	*filelist;
+
 	if (argc < 2)
 		usage();
 
-	/*createThumb(argv[1]);*/
-	loadFileList(argv[1]);
+	while ((ch = getopt(argc, argv, "rv")) != -1) {
+		switch ((char) ch) {
+		case 'r':
+			rflag = 1;
+			break;
+		case 'v':
+			vflag = 1;
+			break;
+		}
+	}
+
+	filelist = argv[argc - 1];
+
+	loadFileList(filelist);
 
 	return 0;
 }
