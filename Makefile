@@ -13,8 +13,10 @@ thumbler.o:
 scanbuild:
 	scan-build -analyze-headers -o result_html -v -enable-checker debug.DumpCallGraph make
 test:
-	find . -type f \( -iname "*.jpg" -or -iname "*.jpeg" -or -iname "*.png" \) > piclist.txt
+	find . -type f \( -iname "*.jpg" -or -iname "*.jpeg" -or -iname "*.png" -or -iname "*.gif" \) > piclist.txt
 	./thumbler piclist.txt
+rmthumbs:
+	rm -rf pics/*_thmb.*
 clean:
 	rm -rf *.o *.core thumbler _thmb.jpg pics/*_thmb.*
 

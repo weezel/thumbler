@@ -10,8 +10,8 @@
 
 /* Some thumbnail defaults */
 #define	THMB_EXT		"_thmb"
-#define	THMB_DEFAULT_WIDTH	200
-#define	THMB_DEFAULT_HEIGHT	200
+#define	THMB_DEFAULT_WIDTH	150
+#define	THMB_DEFAULT_HEIGHT	150
 #define	THMB_JPEG_QUALITY	70
 
 #ifndef MAXNAMLEN
@@ -124,8 +124,12 @@ createThumb(const char *imgname)
 		fprintf(stderr, "Cannot load file; %s\n", imgname);
 		return;
 	}
-	new_width = gdImageSX(src) / 2;
-	new_height = gdImageSY(src) / 2;
+	new_width = gdImageSX(src) / 5;
+	new_height = gdImageSY(src) / 5;
+	/*
+	new_width = THMB_DEFAULT_WIDTH;
+	new_height = THMB_DEFAULT_HEIGHT;
+	*/
 
 	dst = gdImageCreateTrueColor(new_width, new_height);
 	if (!dst) {
@@ -135,10 +139,17 @@ createThumb(const char *imgname)
 		return;
 	}
 
+	gdImageCopyResized(dst, src,
+		0, 0, 0, 0,
+		new_width, new_height,
+		gdImageSX(src),gdImageSY(src));
+
+	/*
 	gdImageCopy(dst, src,
 		    0, 0,
 		    gdImageSX(src) / 2, gdImageSY(src) / 2,
 		    new_width, new_height);
+	*/
 	thumbname = thumbName(imgname);
 	if (saveThumbImage(dst, thumbname))
 		fprintf(stderr, "Cannot save file: %s\n", thumbname);
@@ -167,6 +178,7 @@ loadFileList(const char *fname)
 			fprintf(stdout, "Error while processing file %s: %s\n",
 				fname, strerror(errno));
 		createThumb(buf);
+		errno = 0;
 	}
 
 	fclose(fp);
