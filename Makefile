@@ -1,6 +1,5 @@
 CC	 = clang
 CFLAGS	+= -ansi -g -Wall -Wextra -pedantic
-CFLAGS	+= -Wsign-compare -Wdeclaration-after-statement -Wshadow
 CFLAGS	+= -I /usr/local/include
 LDFLAGS	 = -L /usr/local/lib -L /usr/X11R6/lib -lgd -lpng -ljpeg -lz
 
@@ -11,9 +10,11 @@ all: thumbler.o
 thumbler.o:
 	${CC} ${CFLAGS} -c -o $@ thumbler.c
 scanbuild:
-	scan-build -analyze-headers -o result_html -v -enable-checker debug.DumpCallGraph make
+	scan-build -analyze-headers -o result_html -v \
+		-enable-checker debug.DumpCallGraph make
 test:
-	find . -type f \( -iname "*.jpg" -or -iname "*.jpeg" -or -iname "*.png" -or -iname "*.gif" \) > piclist.txt
+	find . -type f \( -iname "*.jpg" -or -iname "*.jpeg" -or \
+		-iname "*.png" -or -iname "*.gif" \) > piclist.txt
 	./thumbler piclist.txt
 rmthumbs:
 	rm -rf pics/*_thmb.*
