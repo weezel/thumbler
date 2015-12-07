@@ -164,14 +164,16 @@ createThumb(const char *imgname)
 void
 loadFileList(const char *fname)
 {
-	FILE	*fp;
-	char	 buf[MAXPATHLEN];
+	FILE	*fp = NULL;
+	char	*buf = NULL;
+	size_t	 sz = 0;
+	ssize_t	 len = 0;
 
 	if ((fp = fopen(fname, "r")) == NULL)
 		err(1, "Cannot open file: %s", fname);
 
 	errno = 0;
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
+	while ((len = getline(&buf, &sz, fp)) != -1) {
 		buf[strcspn(buf, "\n")] = '\0';
 
 		if (errno)
@@ -181,6 +183,7 @@ loadFileList(const char *fname)
 		errno = 0;
 	}
 
+	free(buf);
 	fclose(fp);
 }
 
