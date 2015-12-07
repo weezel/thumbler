@@ -1,5 +1,7 @@
 #include "gd.h"
 
+#include "utils.h"
+
 #include <err.h>
 #include <fcntl.h>
 #include <libgen.h>
@@ -8,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/param.h>
+
 
 /* Some thumbnail defaults */
 #define	THMB_EXT		"_thmb"
@@ -23,40 +26,6 @@ extern int	errno;
 
 int		rflag;	/* Resize only, default is resize + shrink */
 int		vflag;	/* Verbose */
-
-gdImagePtr
-loadImage(const char *name)
-{
-	char		*ext;
-	FILE		*fp;
-	gdImagePtr	 im;
-
-	ext = NULL;
-	im = NULL;
-
-	fp = fopen(name, "rb");
-	if (!fp) {
-		fprintf(stderr, "Can't open %s file\n", name);
-		return NULL;
-	}
-
-	if ((ext = strrchr(name, '.')) == NULL)
-		return NULL;
-
-	if (strncasecmp(ext, ".gif", 4) == 0)
-		im = gdImageCreateFromGif(fp);
-	else if (strncasecmp(ext, ".jpg", 4) == 0)
-		im = gdImageCreateFromJpeg(fp);
-	else if (strncasecmp(ext, ".jpeg", 5) == 0)
-		im = gdImageCreateFromJpeg(fp);
-	else if (strncasecmp(ext, ".png", 4) == 0)
-		im = gdImageCreateFromPng(fp);
-	else
-		fprintf(stdout, "'%s' file extension not supported\n", ext);
-
-	fclose(fp);
-	return im;
-}
 
 int
 saveThumbImage(const gdImagePtr im, const char *name)
