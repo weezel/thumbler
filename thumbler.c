@@ -161,7 +161,7 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stdout, "Usage: %s filelist\n", __progname);
+	fprintf(stdout, "usage: %s filelist\n", __progname);
 
 	exit(1);
 }
@@ -183,8 +183,11 @@ main(int argc, char *argv[])
 		case 'v':
 			vflag = 1;
 			break;
+		default:
+			usage();
+			/* NOTREACHED */
 		}
-	}
+}
 
 	filelist = argv[argc - 1];
 
