@@ -24,10 +24,10 @@ struct imgmeta { /* Image meta data */
 	unsigned char		*fname;
 	size_t			 height;
 	size_t			 width;
-	SLIST_ENTRY(imgmeta)	 imgmetas;
+	LIST_ENTRY(imgmeta)	 imgmetas;
 };
 
-SLIST_HEAD(imglist_head, imgmeta)	imglist_head;
+LIST_HEAD(imglist_head, imgmeta)	imglist_head;
 
 int
 saveThumbImage(const gdImagePtr im, const char *name)
@@ -163,8 +163,8 @@ usage(void)
 {
 	extern char	*__progname;
 
-	fprintf(stdout, "usage: %s filelist\n", __progname);
-
+	fprintf(stdout, "usage: %s [-rv] [-h height] [-w width] filelist\n",
+	    __progname);
 	exit(1);
 }
 
@@ -172,15 +172,18 @@ int
 main(int argc, char *argv[])
 {
 	int		 ch;
-	size_t		 max_height = 0;
-	size_t		 max_width = 0;
+	size_t		 maxtileheight = 0;
+	size_t		 maxtilewidth = 0;
 	char		*filelist;
 	const char	*errstr = NULL;
+
+	if (argc < 2)
+		usage();
 
 	while ((ch = getopt(argc, argv, "h:rvw:")) != -1) {
 		switch ((unsigned char) ch) {
 		case 'h':
-			max_height = strtonum(optarg, 1, LONG_MAX, &errstr);
+			maxtileheight = strtonum(optarg, 1, LONG_MAX, &errstr);
 			if (errstr)
 				errx(1, "Boing, not a number %s", errstr);
 			break;
@@ -191,7 +194,7 @@ main(int argc, char *argv[])
 			vflag = 1;
 			break;
 		case 'w':
-			max_width = strtonum(optarg, 1, LONG_MAX, &errstr);
+			maxtilewidth = strtonum(optarg, 1, LONG_MAX, &errstr);
 			if (errstr)
 				errx(1, "Boing, not a number %s", errstr);
 			break;
@@ -203,10 +206,7 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 2)
-		usage();
-
-	filelist = argv[argc - 1];
+	filelist = *argv;
 
 	loadFileList(filelist);
 
