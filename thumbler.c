@@ -1,31 +1,33 @@
-#include "gd.h"
-
-#include "utils.h"
+#include <sys/param.h>
+#include <sys/queue.h>
 
 #include <err.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/param.h>
 
+#include <gd.h>
 
-/* Some thumbnail defaults */
-#define	THMB_EXT		"_thmb"
-#define	THMB_DEFAULT_WIDTH	150
-#define	THMB_DEFAULT_HEIGHT	150
-#define	THMB_JPEG_QUALITY	70
-
-#ifndef MAXNAMLEN
-#define	MAXNAMLEN		255
-#endif
+#include "thumbler.h"
+#include "utils.h"
 
 extern int	errno;
 
 int		rflag;	/* Resize only, default is resize + shrink */
 int		vflag;	/* Verbose */
+
+struct imgmeta { /* Image meta data */
+	unsigned char		*fname;
+	size_t			 height;
+	size_t			 width;
+	SLIST_ENTRY(imgmeta)	 imgmetas;
+};
+
+SLIST_HEAD(imglist_head, imgmeta)	imglist_head;
 
 int
 saveThumbImage(const gdImagePtr im, const char *name)
@@ -170,24 +172,39 @@ int
 main(int argc, char *argv[])
 {
 	int		 ch;
-	const char	*filelist;
+	size_t		 max_height = 0;
+	size_t		 max_width = 0;
+	char		*filelist;
+	const char	*errstr = NULL;
 
-	if (argc < 2)
-		usage();
-
-	while ((ch = getopt(argc, argv, "rv")) != -1) {
-		switch ((char) ch) {
+	while ((ch = getopt(argc, argv, "h:rvw:")) != -1) {
+		switch ((unsigned char) ch) {
+		case 'h':
+			max_height = strtonum(optarg, 1, LONG_MAX, &errstr);
+			if (errstr)
+				errx(1, "Boing, not a number %s", errstr);
+			break;
 		case 'r':
 			rflag = 1;
 			break;
 		case 'v':
 			vflag = 1;
 			break;
+		case 'w':
+			max_width = strtonum(optarg, 1, LONG_MAX, &errstr);
+			if (errstr)
+				errx(1, "Boing, not a number %s", errstr);
+			break;
 		default:
 			usage();
 			/* NOTREACHED */
 		}
 	}
+	argc -= optind;
+	argv += optind;
+
+	if (argc < 2)
+		usage();
 
 	filelist = argv[argc - 1];
 
