@@ -20,14 +20,7 @@ extern int	errno;
 int		rflag;	/* Resize only, default is resize + shrink */
 int		vflag;	/* Verbose */
 
-struct imgmeta { /* Image meta data */
-	unsigned char		*fname;
-	size_t			 height;
-	size_t			 width;
-	LIST_ENTRY(imgmeta)	 imgmetas;
-};
-
-LIST_HEAD(imglist_head, imgmeta)	imglist_head;
+LIST_HEAD(imgmeta_h, imgmeta)	imgmeta_head;
 
 int
 saveThumbImage(const gdImagePtr im, const char *name)
@@ -150,7 +143,7 @@ loadFileList(const char *fname)
 		if (errno)
 			fprintf(stdout, "Error while processing file %s: %s\n",
 				fname, strerror(errno));
-		createThumb(buf);
+		/*createThumb(buf);*/
 		errno = 0;
 	}
 
@@ -206,9 +199,37 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
+	LIST_INIT(&imgmeta_head);
+
+	for (size_t i = 0; i < 3; i++) {
+		unsigned char	*tmp;
+		struct imgmeta	*imgmetatmp = NULL;
+
+		if (i == 0) {
+			tmp = "blaa.png";
+			imgmetatmp = newImgMetaDataNode(30, 30, tmp);
+		} else if (i == 1) {
+			tmp = "foo.jpg";
+			imgmetatmp = newImgMetaDataNode(1024, 768, tmp);
+		} else if (i == 2) {
+			tmp = "nuunuu.png";
+			imgmetatmp = newImgMetaDataNode(666, 666, tmp);
+		}
+		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
+	}
+
+	struct imgmeta *imgtmp = LIST_FIRST(&imgmeta_head);
+	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
+		printf("FNAME   %s\n", imgtmp->fname);
+		printf("WIDTH   %ld\n", imgtmp->height);
+		printf("HEIGHT  %ld\n\n", imgtmp->width);
+	}
+
+	/*
 	filelist = *argv;
 
 	loadFileList(filelist);
+	*/
 
 	return 0;
 }

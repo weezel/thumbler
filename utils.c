@@ -1,8 +1,12 @@
-#include "gd.h"
-
+#include <err.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "utils.h"
+
+#include <gd.h>
 
 gdImagePtr
 loadImage(const char *name)
@@ -36,5 +40,21 @@ loadImage(const char *name)
 
 	fclose(fp);
 	return im;
+}
+
+struct imgmeta *
+newImgMetaDataNode(size_t h, size_t w, unsigned char *filename)
+{
+	struct imgmeta	*tmp;
+
+	if ((tmp = calloc(1, sizeof(*tmp))) == NULL)
+		err(1, "malloc");
+
+	tmp->height = h;
+	tmp->width = w;
+	if ((tmp->fname = (unsigned char *)strdup(filename)) == NULL)
+		err(1, "strdup");
+
+	return tmp;
 }
 

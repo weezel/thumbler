@@ -1,5 +1,5 @@
 CC	 = clang
-CFLAGS	+= -ansi -g -Wall -Wextra -pedantic
+CFLAGS	+= -std=c99 -g -Wall -Wextra -pedantic
 CFLAGS	+= -I /usr/local/include
 LDFLAGS	 = -L /usr/local/lib -L /usr/X11R6/lib -lgd -lpng -ljpeg -lz
 
