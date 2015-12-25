@@ -6,7 +6,7 @@ LDFLAGS	 = -L /usr/local/lib -L /usr/X11R6/lib -lgd -lpng -ljpeg -lz
 .PHONY: all thumbler.o clean
 
 all: thumbler.o
-	${CC} ${CFLAGS} $^ -o thumbler thumbler.o utils.c ${LDFLAGS}
+	${CC} ${CFLAGS} $^ -o thumbler thumbler.o ${LDFLAGS}
 thumbler.o:
 	${CC} ${CFLAGS} -c -o $@ thumbler.c
 scanbuild:
