@@ -48,7 +48,7 @@ saveThumbImage(const gdImagePtr im, const char *name)
 
 	fp = fopen(name, "wb");
 	if (!fp) {
-		fprintf(stderr, "Can't save png image to %s\n", name);
+		warnx("Can't save png image to %s\n", name);
 		return 1;
 	}
 
@@ -103,7 +103,7 @@ loadImage(const char *name)
 
 	fp = fopen(name, "rb");
 	if (!fp) {
-		fprintf(stderr, "Can't open %s file\n", name);
+		warnx("Can't open %s file\n", name);
 		return NULL;
 	}
 
