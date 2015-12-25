@@ -30,7 +30,7 @@ struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 int		 saveThumbImage(const gdImagePtr, const char *);
 char		*thumbfileName(const char *);
 gdImagePtr	 loadImage(const char *);
-void		 createThumb(const char *);
+void		 createThumbs(void);
 void		 loadFileList(const char *);
 void		 usage(void);
 

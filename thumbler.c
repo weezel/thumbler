@@ -17,6 +17,7 @@
 extern int	errno;
 
 int		rflag;	/* Resize only, default is resize + shrink */
+int		tflag;	/* Create thumbnails  */
 int		vflag;	/* Verbose */
 
 LIST_HEAD(imgmeta_h, imgmeta)	imgmeta_head;
@@ -98,7 +99,7 @@ loadImage(const char *name)
 {
 	char		*ext = NULL;
 	FILE		*fp = NULL;
-	gdImagePtr	 im;
+	gdImagePtr	 im = NULL;
 
 	fp = fopen(name, "rb");
 	if (!fp) {
@@ -125,49 +126,47 @@ loadImage(const char *name)
 }
 
 void
-createThumb(const char *imgname)
+createThumbs(void)
 {
 	int		 new_width, new_height;
 	const char	*thumbname;
-	gdImagePtr	 src, dst;
+	gdImagePtr	 src = NULL, dst = NULL;
+	struct imgmeta	*imgtmp = LIST_FIRST(&imgmeta_head);
 
-	if ((src = loadImage(imgname)) == NULL) {
-		fprintf(stderr, "Cannot load file; %s\n", imgname);
-		return;
-	}
-	new_width = gdImageSX(src) / 5;
-	new_height = gdImageSY(src) / 5;
-	/*
-	new_width = THMB_DEFAULT_WIDTH;
-	new_height = THMB_DEFAULT_HEIGHT;
-	*/
+	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
+		new_width = imgtmp->width / 5;
+		new_height = imgtmp->height / 5;
 
-	dst = gdImageCreateTrueColor(new_width, new_height);
-	if (!dst) {
-		fprintf(stderr, "Cannot create a thumb\n");
+		dst = gdImageCreateTrueColor(new_width, new_height);
+		if (!dst) {
+			warnx("Cannot create a thumb file %s%s\n",
+			    imgtmp->fname, THMB_EXT);
+			gdImageDestroy(src);
+			continue;
+		}
+
+		src = loadImage(imgtmp->fname);
+
+		if (rflag)
+			gdImageCopy(dst, src,
+				0, 0,
+				gdImageSX(src) / 5, gdImageSY(src) / 5,
+				new_width, new_height);
+		else
+			gdImageCopyResized(dst, src,
+				0, 0, 0, 0,
+				new_width, new_height,
+				gdImageSX(src),gdImageSY(src));
+		thumbname = thumbfileName(imgtmp->fname);
+		if (saveThumbImage(dst, thumbname))
+			warnx("Cannot save file: %s", thumbname);
+
+		if (vflag)
+			fprintf(stdout, "%s -> %s\n", imgtmp->fname, thumbname);
+
+		gdImageDestroy(dst);
 		gdImageDestroy(src);
-		return;
 	}
-
-	if (rflag)
-		gdImageCopy(dst, src,
-			0, 0,
-			gdImageSX(src) / 5, gdImageSY(src) / 5,
-			new_width, new_height);
-	else
-		gdImageCopyResized(dst, src,
-			0, 0, 0, 0,
-			new_width, new_height,
-			gdImageSX(src),gdImageSY(src));
-	thumbname = thumbfileName(imgname);
-	if (saveThumbImage(dst, thumbname))
-		fprintf(stderr, "Cannot save file: %s\n", thumbname);
-
-	if (vflag)
-		fprintf(stdout, "%s -> %s\n", imgname, thumbname);
-
-	gdImageDestroy(dst);
-	gdImageDestroy(src);
 }
 
 void
@@ -229,7 +228,7 @@ main(int argc, char *argv[])
 	if (argc < 2)
 		usage();
 
-	while ((ch = getopt(argc, argv, "h:rvw:")) != -1) {
+	while ((ch = getopt(argc, argv, "h:rtvw:")) != -1) {
 		switch ((unsigned char) ch) {
 		case 'h':
 			maxtileheight = strtonum(optarg, 1, LONG_MAX, &errstr);
@@ -238,6 +237,9 @@ main(int argc, char *argv[])
 			break;
 		case 'r':
 			rflag = 1;
+			break;
+		case 't':
+			tflag = 1;
 			break;
 		case 'v':
 			vflag = 1;
@@ -261,7 +263,8 @@ main(int argc, char *argv[])
 
 	loadFileList(filelist);
 
-	/*createThumb(fnameinlist);*/
+	if (tflag)
+		createThumbs();
 
 	/*
 	struct imgmeta *imgtmp = LIST_FIRST(&imgmeta_head);
