@@ -205,6 +205,16 @@ loadFileList(const char *fname)
 }
 
 void
+printMinWidthFirst(void)
+{
+}
+
+void
+printMaxWidthFirst(void)
+{
+}
+
+void
 usage(void)
 {
 	extern char	*__progname;
@@ -264,15 +274,13 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
-	/*
-	struct imgmeta *imgtmp = LIST_FIRST(&imgmeta_head);
+	/* Empty list before exiting */
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		struct imgmeta *tmp = LIST_FIRST(&imgmeta_head);
 
-	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
-		printf("FNAME   %s\n", imgtmp->fname);
-		printf("WIDTH   %ld\n", imgtmp->height);
-		printf("HEIGHT  %ld\n\n", imgtmp->width);
+		LIST_REMOVE(tmp, imgm_e);
+		free(tmp);
 	}
-	*/
 
 	return 0;
 }

@@ -33,6 +33,8 @@ char		*thumbfileName(const char *);
 gdImagePtr	 loadImage(const char *);
 void		 createThumbs(void);
 void		 loadFileList(const char *);
+void		 printMinWidthFirst(void);
+void		 printMaxWidthFirst(void);
 void		 usage(void);
 
 #endif /* _THUBMLER_H_ */
