@@ -96,12 +96,9 @@ thumbfileName(const char *name)
 gdImagePtr
 loadImage(const char *name)
 {
-	char		*ext;
-	FILE		*fp;
+	char		*ext = NULL;
+	FILE		*fp = NULL;
 	gdImagePtr	 im;
-
-	ext = NULL;
-	im = NULL;
 
 	fp = fopen(name, "rb");
 	if (!fp) {
