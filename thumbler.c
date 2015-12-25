@@ -190,7 +190,7 @@ loadFileList(const char *fname)
 		buf[strcspn(buf, "\n")] = '\0';
 
 		if (errno)
-			fprintf(stdout, "Error while processing file %s: %s\n",
+			warnx("Error while processing line %s: %s\n",
 				fname, strerror(errno));
 		/*createThumb(buf);*/
 		errno = 0;
@@ -269,18 +269,18 @@ main(int argc, char *argv[])
 		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
 	}
 
+	/*
 	struct imgmeta *imgtmp = LIST_FIRST(&imgmeta_head);
 	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
 		printf("FNAME   %s\n", imgtmp->fname);
 		printf("WIDTH   %ld\n", imgtmp->height);
 		printf("HEIGHT  %ld\n\n", imgtmp->width);
 	}
+	*/
 
-	/*
 	filelist = *argv;
 
 	loadFileList(filelist);
-	*/
 
 	return 0;
 }
