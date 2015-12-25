@@ -70,13 +70,12 @@ saveThumbImage(const gdImagePtr im, const char *name)
 char *
 thumbfileName(const char *name)
 {
-	char		*ext;
-	char		*p;
+	char		*ext = NULL;
+	unsigned char	*p = NULL;
 	static char	 fullname[MAXPATHLEN]; /* path + fname,
 						  static -> init zeros */
 	size_t		 i;
 
-	p = ext = NULL;
 	memset(fullname, 0, sizeof(fullname));
 
 	if ((ext = strrchr(name, '.')) == NULL) {
@@ -85,8 +84,8 @@ thumbfileName(const char *name)
 		return NULL;
 	}
 
-	p = (char *) name;
-	for (i = 0; p != ext; i++)
+	p = (unsigned char *) name;
+	for (i = 0; p != (unsigned char *)ext; i++)
 		fullname[i] = *p++;
 
 	snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THMB_EXT, ext);
