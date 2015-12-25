@@ -26,10 +26,10 @@ struct imgmeta { /* Image meta data */
 	LIST_ENTRY(imgmeta)	 imgm_e;
 };
 
-gdImagePtr	 loadImage(const char *);
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 int		 saveThumbImage(const gdImagePtr, const char *);
-char		*thumbname(const char *);
+char		*thumbfileName(const char *);
+gdImagePtr	 loadImage(const char *);
 void		 createThumb(const char *);
 void		 loadFileList(const char *);
 void		 usage(void);
