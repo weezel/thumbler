@@ -20,14 +20,14 @@
 #define DEFAULT_MAX_WIDTH	1024;	/* 0 = no limit */
 
 struct imgmeta { /* Image meta data */
-	unsigned char		*fname;
+	const char		*fname;
 	size_t			 height;
 	size_t			 width;
 	LIST_ENTRY(imgmeta)	 imgm_e;
 };
 
 gdImagePtr	 loadImage(const char *);
-struct imgmeta	*newImgMetaDataNode(size_t, size_t, unsigned char *);
+struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 int		 saveThumbImage(const gdImagePtr, const char *);
 char		 thumbname(const char *);
 void		 createThumb(const char *);

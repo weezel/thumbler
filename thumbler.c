@@ -56,16 +56,16 @@ loadImage(const char *name)
 }
 
 struct imgmeta *
-newImgMetaDataNode(size_t h, size_t w, unsigned char *filename)
+newImgMetaDataNode(size_t w, size_t h, char *filename)
 {
 	struct imgmeta	*tmp;
 
 	if ((tmp = calloc(1, sizeof(*tmp))) == NULL)
 		err(1, "malloc");
 
-	tmp->height = h;
 	tmp->width = w;
-	if ((tmp->fname = (unsigned char *)strdup(filename)) == NULL)
+	tmp->height = h;
+	if ((tmp->fname = strdup(filename)) == NULL)
 		err(1, "strdup");
 
 	return tmp;
@@ -178,7 +178,7 @@ void
 loadFileList(const char *fname)
 {
 	FILE	*fp = NULL;
-	char	*buf = NULL;
+	char	*fnameinlist = NULL;
 	size_t	 sz = 0;
 	ssize_t	 len = 0;
 
@@ -186,21 +186,30 @@ loadFileList(const char *fname)
 		err(1, "Cannot open file: %s", fname);
 
 	errno = 0;
-	while ((len = getline(&buf, &sz, fp)) != -1) {
-		buf[strcspn(buf, "\n")] = '\0';
+	while ((len = getline(&fnameinlist, &sz, fp)) != -1) {
+		struct imgmeta	*imgmetatmp = NULL;
+		gdImagePtr	 tmpimg;
+
+		fnameinlist[strcspn(fnameinlist, "\n")] = '\0';
 
 		if (errno)
-			warnx("Error while processing line %s: %s\n",
+			warnx("Error while processing line %s: %s",
 				fname, strerror(errno));
-		/*createThumb(buf);*/
+
+		if ((tmpimg = loadImage(fnameinlist)) == NULL)
+			continue;
+
+		imgmetatmp = newImgMetaDataNode(gdImageSX(tmpimg),
+		    gdImageSY(tmpimg), fnameinlist);
+
+		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
+
 		errno = 0;
 	}
 
-	free(buf);
+	free(fnameinlist);
 	fclose(fp);
 }
-
-
 
 void
 usage(void)
@@ -252,35 +261,21 @@ main(int argc, char *argv[])
 
 	LIST_INIT(&imgmeta_head);
 
-	for (size_t i = 0; i < 3; i++) {
-		unsigned char	*tmp;
-		struct imgmeta	*imgmetatmp = NULL;
+	filelist = *argv;
 
-		if (i == 0) {
-			tmp = "blaa.png";
-			imgmetatmp = newImgMetaDataNode(30, 30, tmp);
-		} else if (i == 1) {
-			tmp = "foo.jpg";
-			imgmetatmp = newImgMetaDataNode(1024, 768, tmp);
-		} else if (i == 2) {
-			tmp = "nuunuu.png";
-			imgmetatmp = newImgMetaDataNode(666, 666, tmp);
-		}
-		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
-	}
+	loadFileList(filelist);
+
+	/*createThumb(fnameinlist);*/
 
 	/*
 	struct imgmeta *imgtmp = LIST_FIRST(&imgmeta_head);
+
 	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
 		printf("FNAME   %s\n", imgtmp->fname);
 		printf("WIDTH   %ld\n", imgtmp->height);
 		printf("HEIGHT  %ld\n\n", imgtmp->width);
 	}
 	*/
-
-	filelist = *argv;
-
-	loadFileList(filelist);
 
 	return 0;
 }
