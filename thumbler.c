@@ -20,8 +20,6 @@ int		rflag;	/* Resize only, default is resize + shrink */
 int		tflag;	/* Create thumbnails  */
 int		vflag;	/* Verbose */
 
-LIST_HEAD(imgmeta_h, imgmeta)	imgmeta_head;
-
 struct imgmeta *
 newImgMetaDataNode(size_t w, size_t h, char *filename)
 {

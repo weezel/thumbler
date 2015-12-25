@@ -25,6 +25,7 @@ struct imgmeta { /* Image meta data */
 	size_t			 width;
 	LIST_ENTRY(imgmeta)	 imgm_e;
 };
+LIST_HEAD(imgmeta_h, imgmeta)	imgmeta_head;
 
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 int		 saveThumbImage(const gdImagePtr, const char *);
