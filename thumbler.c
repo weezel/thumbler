@@ -204,14 +204,44 @@ loadFileList(const char *fname)
 	fclose(fp);
 }
 
-void
-printMinWidthFirst(void)
+struct imgmeta *
+removeMinWidthNode(void)
 {
+	struct imgmeta	*nodetmp = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*res = NULL;
+	size_t		 minsofar = nodetmp->width;
+
+	LIST_FOREACH(nodetmp, &imgmeta_head, imgm_e) {
+		if (nodetmp->width < minsofar) {
+			minsofar = nodetmp->width;
+			res = nodetmp;
+		}
+	}
+	nodetmp = res;
+
+	LIST_REMOVE(nodetmp, imgm_e);
+
+	return res;
 }
 
-void
-printMaxWidthFirst(void)
+struct imgmeta *
+removeMaxWidthNode(void)
 {
+	struct imgmeta	*nodetmp = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*res = NULL;
+	size_t		 maxsofar = nodetmp->width;
+
+	LIST_FOREACH(nodetmp, &imgmeta_head, imgm_e) {
+		if (nodetmp->width < maxsofar) {
+			maxsofar = nodetmp->width;
+			res = nodetmp;
+		}
+	}
+	nodetmp = res;
+
+	LIST_REMOVE(nodetmp, imgm_e);
+
+	return res;
 }
 
 void
