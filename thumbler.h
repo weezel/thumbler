@@ -38,7 +38,7 @@ gdImagePtr	 loadImage(char *);
 void		 createThumbs(void);
 void		 loadFileList(char *);
 void		 removeMinWidthNode(void);
-struct imgmeta	*removeMaxWidthNode(void);
+void		 removeMaxWidthNode(void);
 void		 usage(void);
 
 #endif /* _THUBMLER_H_ */

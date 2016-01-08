@@ -59,8 +59,10 @@ rmNode(struct imgmeta *n)
 {
 	if (n == NULL)
 		return;
+
 	if (vflag)
-		printf("Removing node: %35s\n", n->fname);
+		printf("Removing node: %35s [W:%ld, H:%ld]\n",
+		    n->fname, n->width, n->height);
 
 	free(n->fname);
 	LIST_REMOVE(n, imgm_e);
@@ -245,6 +247,7 @@ removeMinWidthNode(void)
 	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
 		if (deletable == NULL)
 			break;
+
 		if (curnode->width < deletable->width) {
 			memcpy(&removable_img, curnode, sizeof(struct imgmeta));
 			deletable = curnode;
@@ -255,37 +258,40 @@ removeMinWidthNode(void)
 		rmNode(deletable);
 }
 
-struct imgmeta *
+void
 removeMaxWidthNode(void)
 {
 	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
-	struct imgmeta	*res = NULL;
+	struct imgmeta	*deletable;
 
-	if (curnode == NULL)
-		return NULL;
-
+	deletable = curnode;
 	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
-		if (curnode->width > curnode->width) {
-			res->width = curnode->width;
-			res->height = curnode->height;
-			res = curnode;
+		if (deletable == NULL)
+			break;
+
+		if (curnode->width > deletable->width) {
+			memcpy(&removable_img, curnode, sizeof(struct imgmeta));
+			deletable = curnode;
 		}
 	}
-	curnode = res;
 
-	free(curnode->fname);
-	LIST_REMOVE(curnode, imgm_e);
-	free(curnode);
-
-	return res;
+	if (deletable != NULL)
+		rmNode(deletable);
 }
 
 void
 printMinToMaxWidth(void)
 {
-	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {
 		removeMinWidthNode();
+	}
+}
+
+void
+printMaxToMaxWidth(void)
+{
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		removeMaxWidthNode();
 	}
 }
 
@@ -349,7 +355,8 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
-	printMinToMaxWidth();
+	//printMinToMaxWidth();
+	printMaxToMaxWidth();
 
 	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {
