@@ -61,7 +61,7 @@ rmNode(struct imgmeta *n)
 		return;
 
 	if (vflag)
-		printf("Removing node: %35s [W:%ld, H:%ld]\n",
+		printf("Removing node: %35s [W:%zu, H:%zu]\n",
 		    n->fname, n->width, n->height);
 
 	free(n->fname);
@@ -72,10 +72,8 @@ rmNode(struct imgmeta *n)
 int
 saveThumbImage(const gdImagePtr im, char *name)
 {
-	char	*ext;
+	char	*ext = NULL;
 	FILE	*fp;
-
-	ext = NULL;
 
 	fp = fopen(name, "wb");
 	if (!fp) {
@@ -84,7 +82,7 @@ saveThumbImage(const gdImagePtr im, char *name)
 	}
 
 	if ((ext = strrchr(name, '.')) == NULL)
-		return 1;
+		goto fail;
 
 	if (strncasecmp(ext, ".gif", 4) == 0)
 		gdImageGif(im, fp);
@@ -95,6 +93,7 @@ saveThumbImage(const gdImagePtr im, char *name)
 	else if (strncasecmp(ext, ".png", 4) == 0)
 		gdImagePng(im, fp);
 
+fail:
 	fclose(fp);
 	return 0;
 }
@@ -241,7 +240,7 @@ void
 removeMinWidthNode(void)
 {
 	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
-	struct imgmeta	*deletable;
+	struct imgmeta	*deletable = NULL;
 
 	deletable = curnode;
 	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
@@ -262,7 +261,7 @@ void
 removeMaxWidthNode(void)
 {
 	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
-	struct imgmeta	*deletable;
+	struct imgmeta	*deletable = NULL;
 
 	deletable = curnode;
 	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
