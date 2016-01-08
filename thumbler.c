@@ -69,7 +69,7 @@ rmNode(struct imgmeta *n)
 }
 
 int
-saveThumbImage(const gdImagePtr im, const char *name)
+saveThumbImage(const gdImagePtr im, char *name)
 {
 	char	*ext;
 	FILE	*fp;
@@ -99,15 +99,16 @@ saveThumbImage(const gdImagePtr im, const char *name)
 }
 
 char *
-thumbfileName(const char *name)
+thumbfileName(char *name)
 {
 	char		*ext = NULL;
-	unsigned char	*p = NULL;
-	static char	 fullname[MAXPATHLEN]; /* path + fname,
+	char		*p = NULL;
+	char		*fullname; /* path + fname,
 						  static -> init zeros */
 	size_t		 i;
 
-	memset(fullname, 0, sizeof(fullname));
+	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
+		err(1, "calloc");
 
 	if ((ext = strrchr(name, '.')) == NULL) {
 		fprintf(stdout, "No extension for: %s\n", ext);
@@ -115,17 +116,19 @@ thumbfileName(const char *name)
 		return NULL;
 	}
 
-	p = (unsigned char *) name;
-	for (i = 0; p != (unsigned char *)ext; i++)
+	p = name;
+	for (i = 0; p != ext; i++)
 		fullname[i] = *p++;
 
-	snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THMB_EXT, ext);
+	if (snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THMB_EXT, ext) <= 0) {
+		err(1, "snprintf");
+	}
 
 	return fullname;
 }
 
 gdImagePtr
-loadImage(const char *name)
+loadImage(char *name)
 {
 	char		*ext = NULL;
 	FILE		*fp = NULL;
@@ -159,7 +162,7 @@ void
 createThumbs(void)
 {
 	int		 new_width, new_height;
-	const char	*thumbname;
+	char		*thumbname;
 	gdImagePtr	 src = NULL, dst = NULL;
 	struct imgmeta	*imgtmp = LIST_FIRST(&imgmeta_head);
 
@@ -200,7 +203,7 @@ createThumbs(void)
 }
 
 void
-loadFileList(const char *fname)
+loadFileList(char *fname)
 {
 	FILE	*fp = NULL;
 	char	*fnameinlist = NULL;
@@ -217,19 +220,17 @@ loadFileList(const char *fname)
 
 		fnameinlist[strcspn(fnameinlist, "\n")] = '\0';
 
-		if (errno)
-			warnx("Error while processing line %s: %s",
-				fname, strerror(errno));
-
-		if ((tmpimg = loadImage(fnameinlist)) == NULL)
+		if ((tmpimg = loadImage(fnameinlist)) == NULL) {
+			fprintf(stderr, "Couldn't load image %s\n", fnameinlist);
 			continue;
+		}
 
 		imgmetatmp = newImgMetaDataNode(gdImageSX(tmpimg),
 		    gdImageSY(tmpimg), fnameinlist);
 
 		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
 
-		errno = 0;
+		gdImageDestroy(tmpimg);
 	}
 
 	free(fnameinlist);
