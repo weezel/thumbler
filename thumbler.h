@@ -3,6 +3,9 @@
 
 #include <sys/queue.h>
 
+#include <stdio.h>
+#include <string.h>
+
 #include <gd.h>
 
 /* Some thumbnail defaults */
@@ -20,12 +23,12 @@
 #define DEFAULT_MAX_WIDTH	1024;	/* 0 = no limit */
 
 struct imgmeta { /* Image meta data */
-	const char		*fname;
 	size_t			 height;
 	size_t			 width;
+	char			*fname;
 	LIST_ENTRY(imgmeta)	 imgm_e;
 };
-LIST_HEAD(imgmeta_h, imgmeta)	imgmeta_head;
+LIST_HEAD(imgmeta_h, imgmeta)	 imgmeta_head;
 
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 int		 saveThumbImage(const gdImagePtr, const char *);

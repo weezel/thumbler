@@ -3,18 +3,36 @@
 
 #include <err.h>
 #include <fcntl.h>
-#include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#if defined __linux__
+#define	_POSIX_C_SOURCE_
+
+#ifndef u_char
+#define u_char	uint8_t
+#endif
+
+//#include <libgen.h> XXX Linux needs this?
+#include <bsd/stdlib.h>
+#include <bsd/string.h>
+
+#include <errno.h>
+#include <features.h>
+#include <getopt.h>
+#endif /* linux */
+
 #include <gd.h>
 
 #include "thumbler.h"
 
+#ifndef __OpenBSD____
+#define __OpenBSD____
 extern int	errno;
+#endif
 
 int		rflag;	/* Resize only, default is resize + shrink */
 int		tflag;	/* Create thumbnails  */
