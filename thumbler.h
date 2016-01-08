@@ -31,12 +31,13 @@ struct imgmeta { /* Image meta data */
 LIST_HEAD(imgmeta_h, imgmeta)	 imgmeta_head;
 
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
+void		 rmNode(struct imgmeta *);
 int		 saveThumbImage(const gdImagePtr, const char *);
 char		*thumbfileName(const char *);
 gdImagePtr	 loadImage(const char *);
 void		 createThumbs(void);
 void		 loadFileList(const char *);
-struct imgmeta	*removeMinWidthNode(void);
+void		 removeMinWidthNode(void);
 struct imgmeta	*removeMaxWidthNode(void);
 void		 usage(void);
 

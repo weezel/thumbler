@@ -55,6 +55,19 @@ newImgMetaDataNode(size_t w, size_t h, char *fn)
 	return tmp;
 }
 
+inline void
+rmNode(struct imgmeta *n)
+{
+	if (n == NULL)
+		return;
+	if (vflag)
+		printf("Removing node: %35s\n", n->fname);
+
+	free(n->fname);
+	LIST_REMOVE(n, imgm_e);
+	free(n);
+}
+
 int
 saveThumbImage(const gdImagePtr im, const char *name)
 {
@@ -223,44 +236,58 @@ loadFileList(const char *fname)
 	fclose(fp);
 }
 
-struct imgmeta *
+void
 removeMinWidthNode(void)
 {
-	struct imgmeta	*nodetmp = LIST_FIRST(&imgmeta_head);
-	struct imgmeta	*res = NULL;
-	size_t		 minsofar = nodetmp->width;
+	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*deletable;
 
-	LIST_FOREACH(nodetmp, &imgmeta_head, imgm_e) {
-		if (nodetmp->width < minsofar) {
-			minsofar = nodetmp->width;
-			res = nodetmp;
+	deletable = curnode;
+	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
+		if (deletable == NULL)
+			break;
+		if (curnode->width < deletable->width) {
+			memcpy(&removable_img, curnode, sizeof(struct imgmeta));
+			deletable = curnode;
 		}
 	}
-	nodetmp = res;
 
-	LIST_REMOVE(nodetmp, imgm_e);
-
-	return res;
+	if (deletable != NULL)
+		rmNode(deletable);
 }
 
 struct imgmeta *
 removeMaxWidthNode(void)
 {
-	struct imgmeta	*nodetmp = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
 	struct imgmeta	*res = NULL;
-	size_t		 maxsofar = nodetmp->width;
 
-	LIST_FOREACH(nodetmp, &imgmeta_head, imgm_e) {
-		if (nodetmp->width < maxsofar) {
-			maxsofar = nodetmp->width;
-			res = nodetmp;
+	if (curnode == NULL)
+		return NULL;
+
+	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
+		if (curnode->width > curnode->width) {
+			res->width = curnode->width;
+			res->height = curnode->height;
+			res = curnode;
 		}
 	}
-	nodetmp = res;
+	curnode = res;
 
-	LIST_REMOVE(nodetmp, imgm_e);
+	free(curnode->fname);
+	LIST_REMOVE(curnode, imgm_e);
+	free(curnode);
 
 	return res;
+}
+
+void
+printMinToMaxWidth(void)
+{
+	/* Empty list before exiting */
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		removeMinWidthNode();
+	}
 }
 
 void
@@ -323,12 +350,13 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
+	printMinToMaxWidth();
+
 	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {
 		struct imgmeta *tmp = LIST_FIRST(&imgmeta_head);
 
-		LIST_REMOVE(tmp, imgm_e);
-		free(tmp);
+		rmNode(tmp);
 	}
 
 	return 0;
