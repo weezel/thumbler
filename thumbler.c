@@ -29,8 +29,7 @@
 
 #include "thumbler.h"
 
-#ifndef __OpenBSD____
-#define __OpenBSD____
+#if defined __OpenBSD____
 extern int	errno;
 #endif
 
