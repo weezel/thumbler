@@ -34,9 +34,9 @@
 extern int	errno;
 #endif
 
-int		rflag;	/* Resize only, default is resize + shrink */
-int		tflag;	/* Create thumbnails  */
-int		vflag;	/* Verbose */
+int		rflag; /* Resize only, default is resize + shrink */
+int		tflag; /* Create thumbnails  */
+int		vflag; /* Verbose */
 
 static struct imgmeta	removable_img;
 
