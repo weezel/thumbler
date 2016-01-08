@@ -104,26 +104,33 @@ thumbfileName(char *name)
 	char		*ext = NULL;
 	char		*p = NULL;
 	char		*fullname = NULL;
-	size_t		 i;
+	char		*finalstr = NULL;
 
 	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
 		err(1, "calloc");
 
 	if ((ext = strrchr(name, '.')) == NULL) {
 		fprintf(stdout, "No extension for: %s\n", ext);
-
-		return NULL;
+		goto fail;
 	}
 
 	p = name;
-	for (i = 0; p != ext; i++)
+	for (size_t i = 0; p != ext; i++)
 		fullname[i] = *p++;
 
-	if (snprintf(fullname, sizeof(fullname), "%s%s%s", fullname, THMB_EXT, ext) <= 0) {
+	if ((finalstr = strdup(fullname)) == NULL) {
+		free(fullname);
+		return NULL;
+	}
+
+	if (snprintf(finalstr, sizeof(finalstr), "%s%s%s", fullname, THMB_EXT, ext) <= 0) {
 		err(1, "snprintf");
 	}
 
-	return fullname;
+fail:
+	free(fullname);
+
+	return finalstr;
 }
 
 gdImagePtr
