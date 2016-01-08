@@ -38,17 +38,18 @@ int		rflag;	/* Resize only, default is resize + shrink */
 int		tflag;	/* Create thumbnails  */
 int		vflag;	/* Verbose */
 
-struct imgmeta *
-newImgMetaDataNode(size_t w, size_t h, char *filename)
+static struct imgmeta	removable_img;
+
+inline struct imgmeta *
+newImgMetaDataNode(size_t w, size_t h, char *fn)
 {
 	struct imgmeta	*tmp;
 
-	if ((tmp = calloc(1, sizeof(*tmp))) == NULL)
-		err(1, "malloc");
-
+	if ((tmp = calloc(1, sizeof(struct imgmeta))) == NULL)
+		err(1, "calloc");
 	tmp->width = w;
 	tmp->height = h;
-	if ((tmp->fname = strdup(filename)) == NULL)
+	if ((tmp->fname = strdup(fn)) == NULL)
 		err(1, "strdup");
 
 	return tmp;
