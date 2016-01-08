@@ -103,8 +103,7 @@ thumbfileName(char *name)
 {
 	char		*ext = NULL;
 	char		*p = NULL;
-	char		*fullname; /* path + fname,
-						  static -> init zeros */
+	char		*fullname = NULL;
 	size_t		 i;
 
 	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
