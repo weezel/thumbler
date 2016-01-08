@@ -141,7 +141,7 @@ loadImage(char *name)
 	}
 
 	if ((ext = strrchr(name, '.')) == NULL)
-		return NULL;
+		goto fail;
 
 	if (strncasecmp(ext, ".gif", 4) == 0)
 		im = gdImageCreateFromGif(fp);
@@ -154,6 +154,7 @@ loadImage(char *name)
 	else
 		fprintf(stdout, "'%s' file extension not supported\n", ext);
 
+fail:
 	fclose(fp);
 	return im;
 }
@@ -213,7 +214,6 @@ loadFileList(char *fname)
 	if ((fp = fopen(fname, "r")) == NULL)
 		err(1, "Cannot open file: %s", fname);
 
-	errno = 0;
 	while ((len = getline(&fnameinlist, &sz, fp)) != -1) {
 		struct imgmeta	*imgmetatmp = NULL;
 		gdImagePtr	 tmpimg;
