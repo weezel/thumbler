@@ -61,7 +61,7 @@ rmNode(struct imgmeta *n)
 		return;
 
 	if (vflag)
-		printf("Removing node: %35s [W:%zu, H:%zu]\n",
+		printf("Removing node: %35s [W:%5zu, H:%5zu]\n",
 		    n->fname, n->width, n->height);
 
 	free(n->fname);
@@ -133,9 +133,9 @@ char *
 thumbfileName(char *name)
 {
 	char		*ext = NULL;
-	char		*p = NULL;
 	char		*fullname = NULL;
 	char		*finalstr = NULL;
+	int		 len = 0;
 
 	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
 		err(1, "calloc");
@@ -145,16 +145,23 @@ thumbfileName(char *name)
 		goto fail;
 	}
 
-	p = name;
-	for (size_t i = 0; p != ext; i++)
-		fullname[i] = *p++;
+	len = ext - name;
+	len++;
+
+	strlcpy(fullname, name, len); /* copy all but ext part */
 
 	if ((finalstr = strdup(fullname)) == NULL) {
 		free(fullname);
 		return NULL;
 	}
+	len = sizeof(finalstr) + strlen(THMB_EXT) + sizeof(ext) + 1;
+	if (len > MAXPATHLEN) {
+		printf("string too long\n");
+		goto fail;
+	}
 
-	if (snprintf(finalstr, sizeof(finalstr), "%s%s%s", fullname, THMB_EXT, ext) <= 0) {
+	if (snprintf(finalstr, MAXPATHLEN, "%s%s%s",
+	    fullname, THMB_EXT, ext) <= 0) {
 		err(1, "snprintf");
 	}
 
@@ -229,6 +236,7 @@ createThumbs(void)
 				new_width, new_height,
 				gdImageSX(src),gdImageSY(src));
 		thumbname = thumbfileName(imgtmp->fname);
+
 		if (saveThumbImage(dst, thumbname))
 			warnx("Cannot save file: %s", thumbname);
 
@@ -393,9 +401,7 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
-	//printMinToMaxWidth();
-	printMaxToMaxWidth();
-	packElements();
+	//packElements();
 
 	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {
