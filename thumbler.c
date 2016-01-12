@@ -69,6 +69,37 @@ rmNode(struct imgmeta *n)
 	free(n);
 }
 
+void
+insertAfterMaxWidthNode(struct imgmeta *n)
+{
+	struct imgmeta	*tmp = LIST_FIRST(&imgmeta_head);
+
+	if (tmp == NULL) {
+		LIST_INSERT_HEAD(&imgmeta_head, n, imgm_e);
+		return;
+	}
+
+	for (; tmp != NULL && LIST_NEXT(tmp, imgm_e) != NULL;
+	    tmp = LIST_NEXT(tmp, imgm_e)) {
+		if (n->width > tmp->width) {
+			break;
+		}
+	}
+	LIST_INSERT_BEFORE(tmp, n, imgm_e);
+}
+
+void
+packElements(void)
+{
+	/*
+	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
+
+	while (!LIST_EMPTY(&imgmeta_head)) {
+	}
+	*/
+
+}
+
 int
 saveThumbImage(const gdImagePtr im, char *name)
 {
@@ -234,7 +265,8 @@ loadFileList(char *fname)
 		imgmetatmp = newImgMetaDataNode(gdImageSX(tmpimg),
 		    gdImageSY(tmpimg), fnameinlist);
 
-		LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
+		//LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
+		insertAfterMaxWidthNode(imgmetatmp);
 
 		gdImageDestroy(tmpimg);
 	}
@@ -363,6 +395,7 @@ main(int argc, char *argv[])
 
 	//printMinToMaxWidth();
 	printMaxToMaxWidth();
+	packElements();
 
 	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {

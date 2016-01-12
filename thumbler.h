@@ -32,6 +32,8 @@ LIST_HEAD(imgmeta_h, imgmeta)	 imgmeta_head;
 
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 void		 rmNode(struct imgmeta *);
+void		 insertAfterMaxWidthNode(struct imgmeta *);
+void		 packElements(void);
 int		 saveThumbImage(gdImagePtr, char *);
 char		*thumbfileName(char *);
 gdImagePtr	 loadImage(char *);
