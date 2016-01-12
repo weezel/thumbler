@@ -19,8 +19,8 @@
 #endif
 
 /* Image tiling related defaults */
-#define DEFAULT_MAX_HEIGHT	0;	/* 0 = no limit */
-#define DEFAULT_MAX_WIDTH	1024;	/* 0 = no limit */
+#define DEFAULT_MAX_HEIGHT	0	/* 0 = no limit */
+#define DEFAULT_MAX_WIDTH	1024	/* 0 = no limit */
 
 struct imgmeta { /* Image meta data */
 	size_t			 height;
