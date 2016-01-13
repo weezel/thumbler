@@ -33,6 +33,7 @@
 extern int	errno;
 #endif
 
+int		pflag; /* Pack thumbnails */
 int		rflag; /* Resize only, default is resize + shrink */
 int		tflag; /* Create thumbnails  */
 int		vflag; /* Verbose */
@@ -389,12 +390,15 @@ main(int argc, char *argv[])
 	if (argc < 2)
 		usage();
 
-	while ((ch = getopt(argc, argv, "h:rtvw:")) != -1) {
+	while ((ch = getopt(argc, argv, "h:prtvw:")) != -1) {
 		switch ((unsigned char) ch) {
 		case 'h':
 			maxtileheight = strtonum(optarg, 1, LONG_MAX, &errstr);
 			if (errstr)
 				errx(1, "Boing, not a number %s", errstr);
+			break;
+		case 'p':
+			pflag = 1;
 			break;
 		case 'r':
 			rflag = 1;
@@ -427,7 +431,8 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
-	//packElements();
+	if (pflag)
+		packElements();
 
 	/* Empty list before exiting */
 	while (!LIST_EMPTY(&imgmeta_head)) {
