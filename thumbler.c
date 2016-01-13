@@ -168,7 +168,7 @@ thumbfileName(char *name)
 		err(1, "calloc");
 
 	if ((ext = strrchr(name, '.')) == NULL) {
-		fprintf(stdout, "No extension for: %s\n", ext);
+		fprintf(stdout, "No extension for: %s\n", name);
 		goto fail;
 	}
 
