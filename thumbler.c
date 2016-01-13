@@ -30,6 +30,7 @@
 extern int	errno;
 #endif
 
+int		pflag; /* Pack thumbnails */
 int		rflag; /* Resize only, default is resize + shrink */
 int		tflag; /* Create thumbnails  */
 int		vflag; /* Verbose */
@@ -87,12 +88,69 @@ rmNode(struct imgmeta *n)
 		return;
 
 	if (vflag)
-		printf("Removing node: %35s [W:%zu, H:%zu]\n",
+		printf("Removing node: %35s [W:%5zu, H:%5zu]\n",
 		    n->fname, n->width, n->height);
 
 	free(n->fname);
 	RB_REMOVE(imgmeta_tree, &imgmeta_t, n);
 	free(n);
+}
+
+void
+insertAfterMaxWidthNode(struct imgmeta *n)
+{
+	struct imgmeta	*tmp = LIST_FIRST(&imgmeta_head);
+
+	if (tmp == NULL) {
+		LIST_INSERT_HEAD(&imgmeta_head, n, imgm_e);
+		return;
+	}
+
+	for (; tmp != NULL && LIST_NEXT(tmp, imgm_e) != NULL;
+	    tmp = LIST_NEXT(tmp, imgm_e)) {
+		if (n->width > tmp->width) {
+			break;
+		}
+	}
+	LIST_INSERT_BEFORE(tmp, n, imgm_e);
+}
+
+void
+packElements(void)
+{
+	size_t		 curlinewidth = 0;
+	struct imgmeta	*imgnode = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*rmnode = NULL;
+
+	while (imgnode != NULL) {
+		if (imgnode->width > DEFAULT_MAX_WIDTH) {
+			printf("IMG TOO WIDE, OMITTING: %s, width %zu px\n",
+			    imgnode->fname, imgnode->width);
+
+			rmnode = imgnode;
+			imgnode = LIST_NEXT(imgnode, imgm_e);
+			rmNode(rmnode);
+			continue;
+		}
+
+		if ((curlinewidth + imgnode->width) < DEFAULT_MAX_WIDTH) {
+			curlinewidth += imgnode->width;
+			printf("%-35s width:%zu\n", imgnode->fname, imgnode->width);
+
+			rmnode = imgnode;
+			imgnode = LIST_NEXT(imgnode, imgm_e);
+			rmNode(rmnode);
+
+			continue;
+		} else {
+			printf("=== ttl width: %zu px, modulo: %zu\n\n",
+			    curlinewidth,
+			    (curlinewidth + imgnode->width) % DEFAULT_MAX_WIDTH);
+			curlinewidth = 0;
+		}
+
+		imgnode = LIST_NEXT(imgnode, imgm_e);
+	}
 }
 
 int
@@ -128,9 +186,9 @@ char *
 thumbfileName(char *name)
 {
 	char		*ext = NULL;
-	char		*p = NULL;
 	char		*fullname = NULL;
 	char		*finalstr = NULL;
+	int		 len = 0;
 
 	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
 		err(1, "calloc");
@@ -140,16 +198,23 @@ thumbfileName(char *name)
 		goto fail;
 	}
 
-	p = name;
-	for (size_t i = 0; p != ext; i++)
-		fullname[i] = *p++;
+	len = ext - name;
+	len++;
+
+	strlcpy(fullname, name, len); /* copy all but ext part */
 
 	if ((finalstr = strdup(fullname)) == NULL) {
 		free(fullname);
 		return NULL;
 	}
+	len = sizeof(finalstr) + strlen(THMB_EXT) + sizeof(ext) + 1;
+	if (len > MAXPATHLEN) {
+		printf("string too long\n");
+		goto fail;
+	}
 
-	if (snprintf(finalstr, sizeof(finalstr), "%s%s%s", fullname, THMB_EXT, ext) <= 0) {
+	if (snprintf(finalstr, MAXPATHLEN, "%s%s%s",
+	    fullname, THMB_EXT, ext) <= 0) {
 		err(1, "snprintf");
 	}
 
@@ -224,6 +289,7 @@ createThumbs(void)
 				new_width, new_height,
 				gdImageSX(src),gdImageSY(src));
 		thumbname = thumbfileName(imgtmp->fname);
+
 		if (saveThumbImage(dst, thumbname))
 			warnx("Cannot save file: %s", thumbname);
 
@@ -260,7 +326,7 @@ loadFileList(char *fname)
 		imgmetatmp = newImgMetaDataNode(gdImageSX(tmpimg),
 		    gdImageSY(tmpimg), fnameinlist);
 
-		RB_INSERT(imgmeta_tree, &imgmeta_t, imgmetatmp);
+		insertAfterMaxWidthNode(imgmetatmp);
 
 		gdImageDestroy(tmpimg);
 	}
@@ -292,12 +358,15 @@ main(int argc, char *argv[])
 	if (argc < 2)
 		usage();
 
-	while ((ch = getopt(argc, argv, "h:rtvw:")) != -1) {
+	while ((ch = getopt(argc, argv, "h:prtvw:")) != -1) {
 		switch ((unsigned char) ch) {
 		case 'h':
 			maxtileheight = strtonum(optarg, 1, LONG_MAX, &errstr);
 			if (errstr)
 				errx(1, "Boing, not a number %s", errstr);
+			break;
+		case 'p':
+			pflag = 1;
 			break;
 		case 'r':
 			rflag = 1;
@@ -330,7 +399,8 @@ main(int argc, char *argv[])
 	if (tflag)
 		createThumbs();
 
-	print_tree_inorder(RB_ROOT(&imgmeta_t));
+	if (pflag)
+		packElements();
 
 	/*
 	while (!RB_EMPTY()) {

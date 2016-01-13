@@ -19,8 +19,8 @@
 #endif
 
 /* Image tiling related defaults */
-#define DEFAULT_MAX_HEIGHT	0;	/* 0 = no limit */
-#define DEFAULT_MAX_WIDTH	1024;	/* 0 = no limit */
+#define DEFAULT_MAX_HEIGHT	0	/* 0 = no limit */
+#define DEFAULT_MAX_WIDTH	1024	/* 0 = no limit */
 
 struct imgmeta { /* Image meta data */
 	size_t			 height;
@@ -32,6 +32,8 @@ void		 print_tree_inorder(struct imgmeta *);
 int		 imgmeta_wcmp(struct imgmeta *, struct imgmeta *);
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 void		 rmNode(struct imgmeta *);
+void		 insertAfterMaxWidthNode(struct imgmeta *);
+void		 packElements(void);
 int		 saveThumbImage(gdImagePtr, char *);
 char		*thumbfileName(char *);
 gdImagePtr	 loadImage(char *);
