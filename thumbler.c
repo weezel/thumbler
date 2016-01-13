@@ -91,13 +91,39 @@ insertAfterMaxWidthNode(struct imgmeta *n)
 void
 packElements(void)
 {
-	/*
-	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
+	size_t		 curlinewidth = 0;
+	struct imgmeta	*imgnode = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*rmnode = NULL;
 
-	while (!LIST_EMPTY(&imgmeta_head)) {
+	while (imgnode != NULL) {
+		if (imgnode->width > DEFAULT_MAX_WIDTH) {
+			printf("IMG TOO WIDE, OMITTING: %s, width %zu px\n",
+			    imgnode->fname, imgnode->width);
+
+			rmnode = imgnode;
+			imgnode = LIST_NEXT(imgnode, imgm_e);
+			rmNode(rmnode);
+			continue;
+		}
+
+		if ((curlinewidth + imgnode->width) < DEFAULT_MAX_WIDTH) {
+			curlinewidth += imgnode->width;
+			printf("%-35s width:%zu\n", imgnode->fname, imgnode->width);
+
+			rmnode = imgnode;
+			imgnode = LIST_NEXT(imgnode, imgm_e);
+			rmNode(rmnode);
+
+			continue;
+		} else {
+			printf("=== ttl width: %zu px, modulo: %zu\n\n",
+			    curlinewidth,
+			    (curlinewidth + imgnode->width) % DEFAULT_MAX_WIDTH);
+			curlinewidth = 0;
+		}
+
+		imgnode = LIST_NEXT(imgnode, imgm_e);
 	}
-	*/
-
 }
 
 int
