@@ -1,7 +1,7 @@
 #ifndef _THUBMLER_H_
 #define _THUBMLER_H_
 
-#include <sys/tree.h>
+#include <sys/queue.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -26,10 +26,10 @@ struct imgmeta { /* Image meta data */
 	size_t			 height;
 	size_t			 width;
 	char			*fname;
-	RB_ENTRY(imgmeta)	 entry;
+	LIST_ENTRY(imgmeta)	 imgm_e;
 };
-void		 print_tree_inorder(struct imgmeta *);
-int		 imgmeta_wcmp(struct imgmeta *, struct imgmeta *);
+LIST_HEAD(imgmeta_h, imgmeta)	 imgmeta_head;
+
 struct imgmeta	*newImgMetaDataNode(size_t, size_t, char *);
 void		 rmNode(struct imgmeta *);
 void		 insertAfterMaxWidthNode(struct imgmeta *);
@@ -39,12 +39,8 @@ char		*thumbfileName(char *);
 gdImagePtr	 loadImage(char *);
 void		 createThumbs(void);
 void		 loadFileList(char *);
-void		 printMinToMax(struct imgmeta *);
-void		 printMaxToMin(struct imgmeta *);
+void		 removeMinWidthNode(void);
+void		 removeMaxWidthNode(void);
 void		 usage(void);
-
-RB_HEAD(imgmeta_tree, imgmeta)	 imgmeta_t;
-RB_PROTOTYPE(imgmeta_tree, imgmeta, entry, imgmeta_wcmp)
-RB_GENERATE(imgmeta_tree, imgmeta, entry, imgmeta_wcmp)
 
 #endif /* _THUBMLER_H_ */

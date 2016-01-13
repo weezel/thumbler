@@ -1,10 +1,9 @@
 #include <sys/param.h>
-#include <sys/tree.h>
+#include <sys/queue.h>
 
 #include <err.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +11,10 @@
 
 #if defined __linux__
 #define	_POSIX_C_SOURCE_
+
+#ifndef u_char
+#define u_char	uint8_t
+#endif
 
 //#include <libgen.h> XXX Linux needs this?
 #include <bsd/stdlib.h>
@@ -36,35 +39,6 @@ int		tflag; /* Create thumbnails  */
 int		vflag; /* Verbose */
 
 static struct imgmeta	removable_img;
-
-int
-imgmeta_wcmp(struct imgmeta *n1, struct imgmeta *n2)
-{
-	if (n1->width < n2->width)
-		return -1;
-	return n1->width == n2->width ? 0 : 1;
-}
-
-void
-print_tree_inorder(struct imgmeta *n)
-{
-	struct imgmeta	*left, *right;
-
-	if (n == NULL) {
-		printf("NULL\n");
-		return;
-	}
-	left = RB_LEFT(n, entry);
-	right = RB_LEFT(n, entry);
-	if (left == NULL && right == NULL)
-		printf("%-35s [W:%4zu, H:%4zu]\n", n->fname, n->width, n->height);
-	else {
-		printf("%-35s [W:%4zu, H:%4zu]\n", n->fname, n->width, n->height);
-		print_tree_inorder(left);
-		printf(", ");
-		print_tree_inorder(right);
-	}
-}
 
 inline struct imgmeta *
 newImgMetaDataNode(size_t w, size_t h, char *fn)
@@ -92,7 +66,7 @@ rmNode(struct imgmeta *n)
 		    n->fname, n->width, n->height);
 
 	free(n->fname);
-	RB_REMOVE(imgmeta_tree, &imgmeta_t, n);
+	LIST_REMOVE(n, imgm_e);
 	free(n);
 }
 
@@ -262,9 +236,9 @@ createThumbs(void)
 	int		 new_width, new_height;
 	char		*thumbname;
 	gdImagePtr	 src = NULL, dst = NULL;
-	struct imgmeta	*imgtmp = NULL;
+	struct imgmeta	*imgtmp = LIST_FIRST(&imgmeta_head);
 
-	RB_FOREACH(imgtmp, imgmeta_tree, &imgmeta_t) {
+	LIST_FOREACH(imgtmp, &imgmeta_head, imgm_e) {
 		new_width = imgtmp->width / 5;
 		new_height = imgtmp->height / 5;
 
@@ -335,6 +309,63 @@ loadFileList(char *fname)
 	fclose(fp);
 }
 
+void
+removeMinWidthNode(void)
+{
+	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*deletable = NULL;
+
+	deletable = curnode;
+	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
+		if (deletable == NULL)
+			break;
+
+		if (curnode->width < deletable->width) {
+			memcpy(&removable_img, curnode, sizeof(struct imgmeta));
+			deletable = curnode;
+		}
+	}
+
+	if (deletable != NULL)
+		rmNode(deletable);
+}
+
+void
+removeMaxWidthNode(void)
+{
+	struct imgmeta	*curnode = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*deletable = NULL;
+
+	deletable = curnode;
+	LIST_FOREACH(curnode, &imgmeta_head, imgm_e) {
+		if (deletable == NULL)
+			break;
+
+		if (curnode->width > deletable->width) {
+			memcpy(&removable_img, curnode, sizeof(struct imgmeta));
+			deletable = curnode;
+		}
+	}
+
+	if (deletable != NULL)
+		rmNode(deletable);
+}
+
+void
+printMinToMaxWidth(void)
+{
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		removeMinWidthNode();
+	}
+}
+
+void
+printMaxToMaxWidth(void)
+{
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		removeMaxWidthNode();
+	}
+}
 
 void
 usage(void)
@@ -390,7 +421,7 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	RB_INIT(&imgmeta_t);
+	LIST_INIT(&imgmeta_head);
 
 	filelist = *argv;
 
@@ -402,14 +433,12 @@ main(int argc, char *argv[])
 	if (pflag)
 		packElements();
 
-	/*
-	while (!RB_EMPTY()) {
+	/* Empty list before exiting */
+	while (!LIST_EMPTY(&imgmeta_head)) {
+		struct imgmeta *tmp = LIST_FIRST(&imgmeta_head);
+
+		rmNode(tmp);
 	}
-	for (struct imgmeta *n = RB_MIN(imgmeta_tree); n != NULL;
-	    n = RB_NEXT(n, imgmeta_tree, entry)) {
-		rmNode(n);
-	}
-	*/
 
 	return 0;
 }
