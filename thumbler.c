@@ -300,7 +300,6 @@ loadFileList(char *fname)
 		imgmetatmp = newImgMetaDataNode(gdImageSX(tmpimg),
 		    gdImageSY(tmpimg), fnameinlist);
 
-		//LIST_INSERT_HEAD(&imgmeta_head, imgmetatmp, imgm_e);
 		insertAfterMaxWidthNode(imgmetatmp);
 
 		gdImageDestroy(tmpimg);
