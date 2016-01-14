@@ -6,7 +6,6 @@ OS	 = $(shell uname -s)
 
 ifeq ($(OS), Linux)
 	LDFLAGS		+= -lbsd
-	CFLAGS		+= -D_XOPEN_SOURCE=700 -D_BSD_SOURCE
 	CFLAGS		+= -fsanitize=address
 endif
 
