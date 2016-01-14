@@ -270,6 +270,7 @@ createThumbs(void)
 
 		gdImageDestroy(dst);
 		gdImageDestroy(src);
+		free(thumbname);
 	}
 }
 
