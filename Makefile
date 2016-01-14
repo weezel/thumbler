@@ -1,6 +1,6 @@
 CC	 = clang
 CFLAGS	+= -std=c99 -g -march=native -O0 -Wall -Wextra -pedantic -Wformat \
-	   -Wshadow
+	   -Wshadow -fstack-protector-strong
 LDFLAGS	+= -lgd -ljpeg -lpng
 OS	 = $(shell uname -s)
 
