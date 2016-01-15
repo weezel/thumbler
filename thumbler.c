@@ -112,7 +112,6 @@ packElements(void)
 			rmnode = imgnode;
 			imgnode = LIST_NEXT(imgnode, imgm_e);
 			rmNode(rmnode);
-
 			continue;
 		} else {
 			printf("=== ttl width: %zu px, modulo: %zu\n\n",
@@ -131,14 +130,17 @@ saveThumbImage(const gdImagePtr im, char *name)
 	char	*ext = NULL;
 	FILE	*fp;
 
-	fp = fopen(name, "wb");
-	if (!fp) {
+	if ((fp = fopen(name, "wb")) == NULL) {
 		warnx("Can't save png image to %s\n", name);
 		return 1;
 	}
 
-	if ((ext = strrchr(name, '.')) == NULL)
-		goto fail;
+	if ((ext = strrchr(name, '.')) == NULL) {
+		fclose(fp);
+		return 1;
+	}
+
+	printf("EXT %s [%s]\n", name, ext);
 
 	if (strncasecmp(ext, ".gif", 4) == 0)
 		gdImageGif(im, fp);
@@ -149,7 +151,6 @@ saveThumbImage(const gdImagePtr im, char *name)
 	else if (strncasecmp(ext, ".png", 4) == 0)
 		gdImagePng(im, fp);
 
-fail:
 	fclose(fp);
 	return 0;
 }
@@ -185,7 +186,7 @@ thumbfileName(char *name)
 		goto fail;
 	}
 
-	if (snprintf(finalstr, MAXPATHLEN, "%s%s%s",
+	if (snprintf(finalstr, len, "%s%s%s",
 	    fullname, THMB_EXT, ext) <= 0) {
 		err(1, "snprintf");
 	}
@@ -203,8 +204,7 @@ loadImage(char *name)
 	FILE		*fp = NULL;
 	gdImagePtr	 im = NULL;
 
-	fp = fopen(name, "rb");
-	if (!fp) {
+	if ((fp = fopen(name, "rb")) == NULL) {
 		warnx("Can't open %s file\n", name);
 		return NULL;
 	}
@@ -268,9 +268,9 @@ createThumbs(void)
 		if (vflag)
 			fprintf(stdout, "%s -> %s\n", imgtmp->fname, thumbname);
 
+		free(thumbname);
 		gdImageDestroy(dst);
 		gdImageDestroy(src);
-		free(thumbname);
 	}
 }
 
