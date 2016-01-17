@@ -16,17 +16,7 @@ At first, generate a file list, for example this way
 
 then, let the thumbler do the job
 
-	./thumbler images.lst
+	./thumbler -t images.lst
 
 and tha da, mypic.jpg has mypic_thmb.jpg adjacent!
-
-## TODO
-
-* ~~Still pondering: resize+shrink or plain resize without shrink. Maybe hide over a switch?~~
-
-* ~~File extension is wrong, should be same as the image source~~
-
-* ~~Don't care about the image extension~~
-
-* ~~Initial version, make it work~~
 
