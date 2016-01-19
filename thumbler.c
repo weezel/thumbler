@@ -140,8 +140,6 @@ saveThumbImage(const gdImagePtr im, char *name)
 		return 1;
 	}
 
-	printf("EXT %s [%s]\n", name, ext);
-
 	if (strncasecmp(ext, ".gif", 4) == 0)
 		gdImageGif(im, fp);
 	else if (strncasecmp(ext, ".jpg", 4) == 0)
@@ -160,41 +158,40 @@ thumbfileName(char *name)
 {
 	char		*ext = NULL;
 	char		*fullname = NULL;
-	char		*finalstr = NULL;
-	int		 len = 0;
+	size_t		 len = 0;
 
-	if ((fullname = calloc(MAXPATHLEN, sizeof(char))) == NULL)
+	len = strlen(name) + strlen(THMB_EXT) + 1;
+	if (len >= MAXPATHLEN) {
+		printf("filename too long: %s\n", name);
+		goto fail;
+	}
+
+	if ((fullname = calloc(len, sizeof(char))) == NULL)
 		err(1, "calloc");
 
 	if ((ext = strrchr(name, '.')) == NULL) {
-		fprintf(stdout, "No extension for: %s\n", name);
+		printf("No extension for: %s\n", name);
 		goto fail;
 	}
 
-	len = ext - name;
-	len++;
-
-	strlcpy(fullname, name, len); /* copy all but ext part */
-
-	if ((finalstr = strdup(fullname)) == NULL) {
-		free(fullname);
-		return NULL;
-	}
-	len = sizeof(finalstr) + strlen(THMB_EXT) + sizeof(ext) + 1;
-	if (len > MAXPATHLEN) {
-		printf("string too long\n");
+	len = (ext - name) + 1;
+	if (len >= MAXPATHLEN)
 		goto fail;
-	}
 
-	if (snprintf(finalstr, len, "%s%s%s",
-	    fullname, THMB_EXT, ext) <= 0) {
-		err(1, "snprintf");
-	}
+	if (strlcpy(fullname, name, len) >= MAXPATHLEN)
+		goto fail;
+
+	if (strlcat(fullname, THMB_EXT, MAXPATHLEN) >= MAXPATHLEN)
+		goto fail;
+
+	if (strlcat(fullname, ext, MAXPATHLEN) >= MAXPATHLEN)
+		goto fail;
+
+	return fullname;
 
 fail:
 	free(fullname);
-
-	return finalstr;
+	return NULL;
 }
 
 gdImagePtr
