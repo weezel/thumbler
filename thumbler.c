@@ -348,7 +348,7 @@ removeMaxWidthNode(void)
 }
 
 void
-printMinToMaxWidth(void)
+delMinToMaxWidth(void)
 {
 	while (!LIST_EMPTY(&imgmeta_head)) {
 		removeMinWidthNode();
@@ -356,7 +356,7 @@ printMinToMaxWidth(void)
 }
 
 void
-printMaxToMaxWidth(void)
+delMaxToMaxWidth(void)
 {
 	while (!LIST_EMPTY(&imgmeta_head)) {
 		removeMaxWidthNode();

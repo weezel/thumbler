@@ -41,6 +41,8 @@ void		 createThumbs(void);
 void		 loadFileList(char *);
 void		 removeMinWidthNode(void);
 void		 removeMaxWidthNode(void);
+void		 delMinToMaxWidth(void);
+void		 delMaxToMaxWidth(void);
 void		 usage(void);
 
 #endif /* _THUBMLER_H_ */
