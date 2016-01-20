@@ -88,6 +88,16 @@ insertAfterMaxWidthNode(struct imgmeta *n)
 }
 
 void
+printList(void)
+{
+	struct imgmeta	*tmp = LIST_FIRST(&imgmeta_head);
+
+	LIST_FOREACH(tmp, &imgmeta_head, imgm_e)
+		printf("%-35s [W: %-4zu, H: %-4zu]\n", tmp->fname,
+		    tmp->width, tmp->height);
+}
+
+void
 packElements(void)
 {
 	size_t		 curlinewidth = 0;
