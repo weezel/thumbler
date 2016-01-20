@@ -71,20 +71,22 @@ rmNode(struct imgmeta *n)
 void
 insertAfterMaxWidthNode(struct imgmeta *n)
 {
-	struct imgmeta	*tmp = LIST_FIRST(&imgmeta_head);
+	struct imgmeta	*tmp = NULL;
 
-	if (tmp == NULL) {
+	if (LIST_EMPTY(&imgmeta_head)) {
 		LIST_INSERT_HEAD(&imgmeta_head, n, imgm_e);
 		return;
 	}
 
-	for (; tmp != NULL && LIST_NEXT(tmp, imgm_e) != NULL;
-	    tmp = LIST_NEXT(tmp, imgm_e)) {
+	LIST_FOREACH(tmp, &imgmeta_head, imgm_e) {
 		if (n->width > tmp->width) {
+			LIST_INSERT_BEFORE(tmp, n, imgm_e);
+			break;
+		} else if (LIST_NEXT(tmp, imgm_e) == NULL) {
+			LIST_INSERT_AFTER(tmp, n, imgm_e);
 			break;
 		}
 	}
-	LIST_INSERT_BEFORE(tmp, n, imgm_e);
 }
 
 void
