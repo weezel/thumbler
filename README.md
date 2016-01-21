@@ -14,9 +14,17 @@ At first, generate a file list, for example this way
 
 	`find . -type f \( -iname "*.jpg" -or -iname "*.png" \) >images.lst`
 
-then, let the thumbler do the job
+If you want to get more information `-v` verbose switch can be switched on.
+
+### Create thumbnails
+Then, execute `thumbler`:
 
 	./thumbler -t images.lst
 
-and tha da, mypic.jpg has mypic_thmb.jpg adjacent!
+Now, the `image.jpg` should have thumb named `image_thmb.jpg`.
+
+### Pack images by width wise
+Packing images regarding the width, can be done by executing:
+
+	./thumbler -p thumbs.lst
 
