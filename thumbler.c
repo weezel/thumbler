@@ -32,7 +32,7 @@ extern int	errno;
 #endif
 
 int		pflag; /* Pack thumbnails */
-int		rflag; /* Resize only, default is resize + shrink */
+int		rflag; /* Resize only, default is resize + shrink XXX OBSOLETE? */
 int		tflag; /* Create thumbnails  */
 int		vflag; /* Verbose */
 
@@ -261,14 +261,14 @@ createThumbs(void)
 
 		if (rflag)
 			gdImageCopy(dst, src,
-				0, 0,
-				gdImageSX(src) / 5, gdImageSY(src) / 5,
-				new_width, new_height);
+			    0, 0,
+			    gdImageSX(src) / 5, gdImageSY(src) / 5,
+			    new_width, new_height);
 		else
 			gdImageCopyResized(dst, src,
-				0, 0, 0, 0,
-				new_width, new_height,
-				gdImageSX(src),gdImageSY(src));
+			    0, 0, 0, 0,
+			    new_width, new_height,
+			    gdImageSX(src),gdImageSY(src));
 		thumbname = thumbfileName(imgtmp->fname);
 
 		if (saveThumbImage(dst, thumbname))
