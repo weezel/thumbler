@@ -6,7 +6,7 @@ OS	 = $(shell uname -s)
 
 ifeq ($(OS), Linux)
 	LDFLAGS		+= -lbsd
-	CFLAGS		+= -fsanitize=address
+	CFLAGS		+= -fsanitize=address -fsanitize=undefined
 endif
 
 ifeq ($(OS), OpenBSD)
